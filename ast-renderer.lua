@@ -1,0 +1,42 @@
+local class = require "mini.class"
+
+local renderer = class("ast-renderer", {})
+function renderer:init(obj_type_handler)
+	if not (type(obj_type_handler)=="function") then
+		local name = obj_type_handler
+		obj_type_handler = function(t) return t[name] end
+	end
+	self._obj_type_handler = obj_type_handler
+
+	self._config = {}
+
+	local meta = getmetatable(self)
+	self._debugvalue = tostring(self)
+	meta.__tostring = function(self) return self:render(self) or self._debugvalue or "" end
+
+	return self
+end
+
+function renderer:render(t)
+	if not t then
+		error("argument #1 missing", 2)
+	end
+
+	local objtype = self._obj_type_handler(t)
+	if not objtype then
+		error("unable to determine type",2)
+	end
+
+	local f = self._config[objtype]
+	if not f then error("no handler to render type "..objtype,2) end
+
+	return f(self, t)
+end
+
+
+function renderer:configure(obj_type, f)
+	self._config[obj_type] = f
+	return self
+end
+
+return renderer
