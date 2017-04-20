@@ -52,7 +52,8 @@ return function (subject, opts)
   local function create_node (node_type, captures, start_pos, end_pos)
 
     local node = name_captures(node_type, captures)
-    node.type = node_type
+--  node.type = node_type
+    node.tag = node_type
 
     if with_loc2 then
       node.loc = {
