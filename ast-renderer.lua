@@ -39,4 +39,17 @@ function renderer:configure(obj_type, f)
 	return self
 end
 
+function renderer:adddefs(...)
+	local k = nil
+	for i, v in ipairs({...}) do
+		if k==nil then
+			k=v
+		else
+			self:configure(k,v)
+			k=nil
+		end
+	end
+	return self
+end
+
 return renderer
