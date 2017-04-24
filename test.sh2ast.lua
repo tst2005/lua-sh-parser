@@ -1,12 +1,13 @@
 local parse = require 'sh-parser.parser'.parse
-local t = [[
+local sh = [[
 FOO=bar
 ]]
 if (...) == "-" then
-	t=io.stdin:read("*a")
+	sh=io.stdin:read("*a")
 end
 
-t = parse(t)
+--local t = parse(sh)
+local t = parse(sh, {comments = true})
 
 local tprint = require"tprint"
 tprint.indent="    "
