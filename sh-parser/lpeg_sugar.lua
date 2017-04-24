@@ -36,6 +36,7 @@ function F.on_define_rule (name, pattern, env)
   local name_init = name:sub(1, 1)
 
   if name_init ~= '_' and is_upper(name_init) then
+    --        ( func      name,   start_pos, captures,  end_pos,  subject )  -> create_node
     pattern = ( Carg(1) * Cc(name) * Cp() * Ct(pattern) * Cp() * Carg(2) )
               / create_node
   end
