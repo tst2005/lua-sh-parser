@@ -1,7 +1,7 @@
-local render = require "ast-renderer"
+local renderer = require "ast-renderer"
 
 --local typeget = function(t) return t.tag or t.type end
-local x = render("tag")
+local x = renderer("tag")
 
 local function prot(s)
 	return s:gsub("[\"\\$`]", function(cap) return "\\"..cap end)
@@ -33,12 +33,14 @@ local function table_concatlike(self, t, sep)
 end
 ]]--
 
-x:adddefs(
-"Name", function(self, t)
+local lua = x:defs()
+
+lua["Name"] = function(self, t)
 	assert(type(t.text)=="string")
 	return t.text
-end,
-"Word", function(self, t)
+end
+
+function lua:Word(t)
 	local sep = " "
 	assert(t.content and t.content[1])
 	local content = t.content
@@ -51,12 +53,14 @@ end,
 		return words
 	end
 	return squotestring( words )
-end,
-"Assignment", function(self, t)
+end
+
+function lua:Assignment(t)
 	assert(t.name and t.value)
 	return self:render(t.name) .. "=" .. self:render(t.value)
-end,
-"SimpleCommand", function(self, t)
+end
+
+function lua:SimpleCommand(t)
 	local r = {}
 	if t.prefix then
 		for i,v in ipairs(t.prefix) do
@@ -72,8 +76,8 @@ end,
 		end
 	end
 	return table.concat(r, " ")
-end,
-"Program", function(self, t)
+end
+function lua:Program(t)
 	local r = {}
 	-- if t.shebang then end ?
 	if t.body then
@@ -82,12 +86,12 @@ end,
 		end
 	end
 	return table.concat(r, "\n")
-end,
-"CommandSubBackquote", function(self, t)
+end
+function lua:CommandSubBackquote(t)
 	if t.children then
 		assert(#t.children==1)
 		return "`"..prot(t.children[1]).."`"
 	end
 end
-)
+
 return x

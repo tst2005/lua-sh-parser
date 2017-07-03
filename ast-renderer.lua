@@ -6,7 +6,7 @@ function renderer:init(obj_type_handler)
 		local name = obj_type_handler
 		obj_type_handler = function(t) return t[name] end
 	end
-	self._obj_type_handler = obj_type_handler
+	self._obj_type_handler = obj_type_handler -- a function
 
 	self._config = {}
 
@@ -15,6 +15,10 @@ function renderer:init(obj_type_handler)
 	meta.__tostring = function(self) return self:render(self) or self._debugvalue or "" end
 
 	return self
+end
+
+function renderer:defs()
+	return self._config
 end
 
 function renderer:render(t)
@@ -33,7 +37,7 @@ function renderer:render(t)
 	return f(self, t)
 end
 
-
+--[[
 function renderer:configure(obj_type, f)
 	self._config[obj_type] = f
 	return self
@@ -51,5 +55,5 @@ function renderer:adddefs(...)
 	end
 	return self
 end
-
+]]--
 return renderer
