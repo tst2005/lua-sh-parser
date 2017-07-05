@@ -33,14 +33,14 @@ local function table_concatlike(self, t, sep)
 end
 ]]--
 
-local lua = x:defs()
+local sh = x:defs()
 
-lua["Name"] = function(self, t)
+sh["Name"] = function(self, t)
 	assert(type(t.text)=="string")
 	return t.text
 end
 
-function lua:Word(t)
+function sh:Word(t)
 	local sep = " "
 	assert(t.content and t.content[1])
 	local content = t.content
@@ -55,12 +55,12 @@ function lua:Word(t)
 	return squotestring( words )
 end
 
-function lua:Assignment(t)
+function sh:Assignment(t)
 	assert(t.name and t.value)
 	return self:render(t.name) .. "=" .. self:render(t.value)
 end
 
-function lua:SimpleCommand(t)
+function sh:SimpleCommand(t)
 	local r = {}
 	if t.prefix then
 		for i,v in ipairs(t.prefix) do
@@ -77,7 +77,7 @@ function lua:SimpleCommand(t)
 	end
 	return table.concat(r, " ")
 end
-function lua:Program(t)
+function sh:Program(t)
 	local r = {}
 	-- if t.shebang then end ?
 	if t.body then
@@ -87,7 +87,7 @@ function lua:Program(t)
 	end
 	return table.concat(r, "\n")
 end
-function lua:CommandSubBackquote(t)
+function sh:CommandSubBackquote(t)
 	if t.children then
 		assert(#t.children==1)
 		return "`"..prot(t.children[1]).."`"
