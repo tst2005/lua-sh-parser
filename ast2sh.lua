@@ -94,4 +94,13 @@ function sh:CommandSubBackquote(t)
 	end
 end
 
+function sh:FunctionDef(t)
+	return self:render(t.name).."()".. self:render(t.body) -- t.redirs
+end
+
+function sh:BraceGroup(t)
+	return "{\n"..self:render(t.body).."\n}\n" -- redirs
+end
+
+
 return x
