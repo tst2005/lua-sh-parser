@@ -35,31 +35,25 @@ end
 
 local sh = x:defs()
 
-sh["Name"] = function(self, t)
-	assert(type(t.text)=="string")
-	return t.text
-end
-
-function sh:Word(t)
-	local sep = " "
-	assert(t.content and t.content[1])
-	local content = t.content
-
-	local words = t.content[1]
-	if type(words) ~= "string" then
-		return self:render(words)
+-- Program = 'body',
+function sh:Program(t)
+	local r = {}
+	-- if t.shebang then end ?
+	if t.body then
+		for i,v in ipairs(t.body) do
+			r[#r+1] = self:render(v)
+		end
 	end
-	if not words:find("[\"\\$ ]") then
-		return words
-	end
-	return squotestring( words )
+	return table.concat(r, "\n")
 end
 
-function sh:Assignment(t)
-	assert(t.name and t.value)
-	return self:render(t.name) .. "=" .. self:render(t.value)
-end
-
+-- CompoundList = 'cmds',
+-- SequentialList = 'cmds',
+-- AndList = 'cmds',
+-- OrList = 'cmds',
+-- Not = 'cmd',
+-- PipeSequence = 'cmds',
+-- SimpleCommand = { 'prefix', 'cmd', 'suffix' },
 function sh:SimpleCommand(t)
 	local r = {}
 	if t.prefix then
@@ -77,30 +71,70 @@ function sh:SimpleCommand(t)
 	end
 	return table.concat(r, " ")
 end
-function sh:Program(t)
-	local r = {}
-	-- if t.shebang then end ?
-	if t.body then
-		for i,v in ipairs(t.body) do
-			r[#r+1] = self:render(v)
-		end
-	end
-	return table.concat(r, "\n")
+
+-- BraceGroup = { 'body', 'redirs' },
+function sh:BraceGroup(t)
+	return "{\n"..self:render(t.body).."\n}\n" -- redirs
 end
+
+-- Subshell = { 'body', 'redirs' },
+-- If = { 'clauses', 'redirs' },
+-- IfClause = { 'cond', 'body' },
+-- ElifClause = { 'cond', 'body' },
+-- ElseClause = { 'body' },
+-- For = { 'var', 'items', 'body', 'redirs' },
+-- Case = { 'var', 'cases', 'redirs' },
+-- CaseItem = { 'pattern', 'body' },
+-- While = { 'cond', 'body', 'redirs' },
+-- Until = { 'cond', 'body', 'redirs' },
+-- FunctionDef = { 'name', 'body', 'redirs' },
+function sh:FunctionDef(t)
+	return self:render(t.name).."()".. self:render(t.body) -- t.redirs
+end
+
+-- RedirectFile = { 'fd', 'op', 'file' },
+-- RedirectHereDoc = { 'fd', 'op', 'delimiter', 'content' },
+-- HereDocContent = { 'content' },
+-- Assignments = { 'modifier', 'assignments' },
+
+-- Assignment = { 'name', 'value' },
+function sh:Assignment(t)
+	assert(t.name and t.value)
+	return self:render(t.name) .. "=" .. self:render(t.value)
+end
+
+-- Name = { 'text' },
+function sh:Name(t)
+	assert(type(t.text)=="string")
+	return t.text
+end
+
+-- Word = 'content',
+function sh:Word(t)
+	local sep = " "
+	assert(t.content and t.content[1])
+	local content = t.content
+
+	local words = t.content[1]
+	if type(words) ~= "string" then
+		return self:render(words)
+	end
+	if not words:find("[\"\\$ ]") then
+		return words
+	end
+	return squotestring( words )
+end
+
+-- ArithmeticExpansion = { 'text' },
+-- ParameterExpansion = { 'op_pre', 'param', 'op_in', 'word' },
+-- CommandSubstitution = 'cmds',
+-- Comment = { 'text' },
+
 function sh:CommandSubBackquote(t)
 	if t.children then
 		assert(#t.children==1)
 		return "`"..prot(t.children[1]).."`"
 	end
 end
-
-function sh:FunctionDef(t)
-	return self:render(t.name).."()".. self:render(t.body) -- t.redirs
-end
-
-function sh:BraceGroup(t)
-	return "{\n"..self:render(t.body).."\n}\n" -- redirs
-end
-
 
 return x
