@@ -12,4 +12,4 @@ local t = parse(sh, {comments = true})
 local tprint = require"tprint"
 tprint.indent="    "
 
-print("t = "..tprint(t))
+print("t = "..tprint(t, {inline=false}))

@@ -7,7 +7,7 @@ if (...) == "-" then
 	local load = load or loadstring
 	local t = load(luacode, luacode, "t", tmpenv)()
 	--print(t)
-	print("t = "..require"tprint"(t))
+	print("t = "..require"tprint"(t, {inline=false}))
 	print(x:render(t))
 	return
 end
@@ -118,3 +118,5 @@ assert( x:render(t.body[1]) == 'FOO=foo BAR=bar ls -ld */')
 
 assert( x:render(t) == 'FOO=foo BAR=bar ls -ld */')
 --print("OK: Program")
+
+print("OK")

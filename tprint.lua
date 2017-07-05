@@ -1,1 +1,1 @@
-mini/tprint/simple.lua
+mini/tprint/better.lua
