@@ -1,7 +1,7 @@
 local renderer = require "ast-renderer"
 
 --local typeget = function(t) return t.tag or t.type end
-local x = renderer("tag")
+local ast2sh = renderer("tag")
 
 local function prot(s)
 	return s:gsub("[\"\\$`]", function(cap) return "\\"..cap end)
@@ -20,20 +20,7 @@ local function squotestring(s)
 	end).."'"
 end
 
-local function table_concatlike(self, t, sep)
-	local r = {}
-	for i,v in ipairs(t) do
-		if type(v) == "table" then
-			r[#r+1] = self:render(v)
-		else
-			r[#r+1] = v
-		end
-	end
-	return table.concat(r, sep or "")
-end
-
-
-local sh = x:defs()
+local sh = ast2sh:defs()
 
 -- Program = 'body',
 function sh:Program(t)
@@ -69,7 +56,7 @@ end
 
 -- PipeSequence = 'cmds',
 function sh:PipeSequence(t)
-	return table_concatlike(self, t.cmds, "|")
+	return self:concat(t.cmds, "|")
 end
 
 -- SimpleCommand = { 'prefix', 'cmd', 'suffix' },
@@ -93,17 +80,17 @@ end
 
 -- BraceGroup = { 'body', 'redirs' },
 function sh:BraceGroup(t)
-	return "{\n"..self:render(t.body).."\n}"..table_concatlike(self, t.redirs, " ").."\n"
+	return "{\n"..self:render(t.body).."\n}"..self:concat(t.redirs, " ").."\n"
 end
 
 -- Subshell = { 'body', 'redirs' },
 function sh:Subshell(t)
-	return "( "..self:render(t.body).." )"..table_concatlike(self, t.redirs, " ").."\n"
+	return "( "..self:render(t.body).." )"..self:concat(t.redirs, " ").."\n"
 end
 
 -- If = { 'clauses', 'redirs' },
 function sh:If(t)
-	return "if "..self:render(t.clauses[1])..table_concatlike(self, t.redirs, " ") -- FIXME: all conditions ?
+	return "if "..self:render(t.clauses[1])..self:concat(t.redirs, " ") -- FIXME: all conditions ?
 end
 
 -- IfClause = { 'cond', 'body' },
@@ -125,7 +112,7 @@ end
 
 -- Case = { 'var', 'cases', 'redirs' },
 function sh:Case(t)
-	return "case "..self:render(t.var).." in\n"..table_concatlike(self, t.cases, "\n").."esac\n"
+	return "case "..self:render(t.var).." in\n"..self:concat(t.cases, "\n").."esac\n"
 end
 
 -- CaseItem = { 'pattern', 'body' },
@@ -134,7 +121,7 @@ function sh:CaseItem(t)
 end
 
 function sh:Pattern(t)
-	return table_concatlike(self, t.children, "|")
+	return self:concat(t.children, "|")
 end
 
 -- While = { 'cond', 'body', 'redirs' },
@@ -218,4 +205,4 @@ function sh:CommandSubBackquote(t)
 	end
 end
 
-return x
+return ast2sh

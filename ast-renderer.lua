@@ -37,6 +37,18 @@ function renderer:render(t)
 	return f(self, t)
 end
 
+function renderer:concat(t, sep)
+	local r = {}
+	for i,v in ipairs(t) do
+		if type(v) == "table" then
+			r[#r+1] = self:render(v)
+		else
+			r[#r+1] = v
+		end
+	end
+	return table.concat(r, sep or "")
+end
+
 --[[
 function renderer:configure(obj_type, f)
 	self._config[obj_type] = f
